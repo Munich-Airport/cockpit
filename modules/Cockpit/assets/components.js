@@ -1919,12 +1919,19 @@ riot.tag2('field-boolean', '<div ref="container" class="uk-display-inline-block"
 
         }.bind(this);
 
+        this.on('mount', function(){
+            if(opts['readonly'] && App.$data.user.group != 'admin'){
+                this.refs.check.disabled = opts['readonly'];;
+            }
+
+        });
+
         this.toggle = function(e) {
 
             this.value = this.refs.check.checked;
             this.$setValue(this.value);
 
-        }.bind(this)
+        }.bind(this);
 
 });
 
@@ -2073,14 +2080,17 @@ riot.tag2('field-date', '<input ref="input" class="uk-width-1-1" bind="{opts.bin
         }
 
         this.on('mount', function(){
+            if(!opts['readonly'] || App.$data.user.group == 'admin'){
+                App.assets.require(['/assets/lib/uikit/js/components/datepicker.js', '/assets/lib/uikit/js/components/form-select.js'], function() {
 
-            App.assets.require(['/assets/lib/uikit/js/components/datepicker.js', '/assets/lib/uikit/js/components/form-select.js'], function() {
+                    UIkit.datepicker(this.refs.input, opts).element.on('change', function() {
+                      $this.refs.input.$setValue($this.refs.input.value);
+                    });
 
-                UIkit.datepicker(this.refs.input, opts).element.on('change', function() {
-                    $this.refs.input.$setValue($this.refs.input.value);
-                });
-
-            }.bind(this));
+                }.bind(this));
+        } else {
+            $this.refs.input.setAttribute('readonly', opts['readonly']);
+        }
         });
 
 });
@@ -3062,6 +3072,9 @@ riot.tag2('field-location', '<div class="uk-alert" if="{!apiready}"> Loading map
         ]);
 
         var $this = this, defaultpos = {lat:53.55909862554551, lng:9.998652343749995};
+        if(opts['readonly'] && App.$data.user.group != 'admin'){
+               $this.refs.input.setAttribute('readonly', opts['readonly']);
+        }
 
         this.latlng = defaultpos;
 
@@ -3097,8 +3110,11 @@ riot.tag2('field-location', '<div class="uk-alert" if="{!apiready}"> Loading map
                     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     }).addTo(map);
-
-                    var marker = new L.marker([$this.latlng.lat, $this.latlng.lng], {draggable:'true'});
+                    var dragable = true;
+                    if(opts['readonly'] && App.$data.user.group != 'admin'){
+                        dragable = !opts['readonly']
+                    }
+                    var marker = new L.marker([$this.latlng.lat, $this.latlng.lng], {draggable:dragable});
 
                     marker.on('dragend', function(e) {
                         $this.$setValue(marker.getLatLng());
@@ -3702,7 +3718,7 @@ riot.tag2('field-tags', '<div class="uk-grid uk-grid-small uk-flex-middle" data-
 
 });
 
-riot.tag2('field-text', '<div class="uk-position-relative field-text-container"> <input ref="input" class="uk-width-1-1" bind="{opts.bind}" type="{opts.type || \'text\'}" oninput="{updateLengthIndicator}" placeholder="{opts.placeholder}"> <span class="uk-text-muted" ref="lengthIndicator" show="{type==\'text\'}" hide="{opts.showCount === false}"></span> </div> <div class="uk-text-muted uk-text-small uk-margin-small-top" if="{opts.slug}" title="Slug"> {slug} </div>', 'field-text [ref="input"][type=text],[data-is="field-text"] [ref="input"][type=text]{ padding-right: 30px !important; } field-text [ref="input"][type=text]:read-only,[data-is="field-text"] [ref="input"][type=text]:read-only{ background-color: lightgray !important; } field-text .field-text-container span,[data-is="field-text"] .field-text-container span{ position: absolute; top: 50%; right: 0; font-family: monospace; transform: translateY(-50%) scale(.9); }', '', function(opts) {
+riot.tag2('field-text', '<div class="uk-position-relative field-text-container"> <input ref="input" class="uk-width-1-1" bind="{opts.bind}" type="{opts.type || \'text\'}" oninput="{updateLengthIndicator}" placeholder="{opts.placeholder}"> <span class="uk-text-muted" ref="lengthIndicator" show="{type==\'text\'}" hide="{opts.showCount === false}"></span> </div> <div class="uk-text-muted uk-text-small uk-margin-small-top" if="{opts.slug}" title="Slug"> {slug} </div>', 'field-text [ref="input"][type=text],[data-is="field-text"] [ref="input"][type=text]{ padding-right: 30px !important; } field-text .field-text-container span,[data-is="field-text"] .field-text-container span{ position: absolute; top: 50%; right: 0; font-family: monospace; transform: translateY(-50%) scale(.9); }', '', function(opts) {
 
         var $this = this;
 
@@ -3819,14 +3835,17 @@ riot.tag2('field-time', '<input ref="input" class="uk-width-1-1" bind="{opts.bin
                 this.refs.input.setAttribute('required', 'required');
             }
 
-            App.assets.require(['/assets/lib/uikit/js/components/timepicker.js'], function() {
+            if(!opts['readonly'] || App.$data.user.group == 'admin'){
+                App.assets.require(['/assets/lib/uikit/js/components/timepicker.js', '/assets/lib/uikit/js/components/form-select.js'], function() {
 
-                UIkit.timepicker(this.refs.input, opts).element.on('change', function() {
+                    UIkit.timepicker(this.refs.input, opts).element.on('change', function() {
                     $this.refs.input.$setValue($this.refs.input.value);
-                });
+                    });
 
-            }.bind(this));
-        });
+                }.bind(this));
+            } else {
+                $this.refs.input.setAttribute('readonly', opts['readonly']);                }
+            });
 
 });
 

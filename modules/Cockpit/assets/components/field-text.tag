@@ -6,9 +6,6 @@
             padding-right: 30px !important;
         }
 
-[ref="input"][type=text]:read-only {
-            background-color: lightgray !important;
-        }
 
         .field-text-container span {
             position: absolute;
